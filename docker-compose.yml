@@ -4,7 +4,7 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
-    container_name: php81
+    container_name: php81-h
     depends_on:
       - db
     volumes:
