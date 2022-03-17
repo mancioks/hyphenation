@@ -1,6 +1,13 @@
 <?php
 
 $start_time = microtime(true);
+const DEBUG = true;
+
+$fileName = 'words.txt';
+if(DEBUG) {
+    $fileName = 'word.txt';
+    echo "<pre>";
+}
 
 $maxLen = 0;
 $minLen = 500;
@@ -63,6 +70,9 @@ function findPartsInPattern($splitParts, $pattern)
     foreach ($splitParts as $type => $parts) {
         foreach ($parts as $part) {
             if(isset($pattern[$type][$part["part"]])) {
+                if(DEBUG) {
+                    echo $pattern[$type][$part["part"]]."<br>";
+                }
                 $found[] = ["start_index" => $part["start_index"], "pattern" => trim($pattern[$type][$part["part"]], ".")];
             }
         }
@@ -71,12 +81,16 @@ function findPartsInPattern($splitParts, $pattern)
     return $found;
 }
 
-function mergeWordWithPattern($word, $foundPattern)
+function mergeWordWithPattern($word, $foundPattern, $debugPattern = null)
 {
     $word = str_split($word);
     $length = count($word);
     for($x = $length; $x >= 0; $x--) {
         array_splice( $word, $x, 0, 0 );
+    }
+
+    if(DEBUG) {
+        echo "<br>".str_replace("0", " ", implode("", $word))."<br>";
     }
 
     foreach ($foundPattern as $pattern) {
@@ -115,6 +129,25 @@ function mergeWordWithPattern($word, $foundPattern)
             $newPattern[] = 0;
         }
 
+        if(DEBUG) {
+            $k = 0;
+            for($l = 0; $l < count($word); $l++) {
+                if($l >= $startsFrom && $l < ($startsFrom + count($newPattern))) {
+                    if($newPattern[$k] != 0 && is_numeric($newPattern[$k])) {
+                        echo $newPattern[$k];
+                    } else {
+                        echo " ";
+                    }
+                    $k++;
+                } else {
+                    echo " ";
+                }
+            }
+
+            //gali reiket perdaryt pattern arrays kartu su skaiciais
+            echo " ".$pattern["pattern"]."<br>";
+        }
+
         $tempCount = 0;
         for($x = $startsFrom; $x < $startsFrom + count($newPattern); $x+=2) {
             if($newPattern[$tempCount] > $word[$x]) {
@@ -124,7 +157,12 @@ function mergeWordWithPattern($word, $foundPattern)
         }
     }
 
-    //return implode("", $word);
+    if(DEBUG) {
+        echo str_replace("0", " ", implode("", $word))."<br>";
+        echo str_replace([1,3,5,7,9], "-", str_replace([0,2,4,6,8], " ", implode("", $word)))."<br>";
+        echo "<br>".implode("", $word)."<br>";
+        echo str_replace("0", "", implode("", $word))."<br>";
+    }
     return str_replace("0", "", implode("", $word));
 }
 
@@ -154,7 +192,7 @@ function hyphenateFromMerged($merged)
     return trim(str_replace([1,3,5,7,9], "-", str_replace([2,4,6,8], "", $merged)), "-");
 }
 
-$words = new SplFileObject('words.txt');
+$words = new SplFileObject($fileName);
 $words->setFlags(
     SplFileObject::SKIP_EMPTY |
     SplFileObject::DROP_NEW_LINE
@@ -163,7 +201,13 @@ $words->setFlags(
 foreach ($words as $word) {
     $parts = splitWord($word,$maxLen, $minLen);
     $found = findPartsInPattern($parts, $pattern);
-    $merged = mergeWordWithPattern($word, $found);
+
+    if(!DEBUG) {
+        $merged = mergeWordWithPattern($word, $found);
+    } else {
+        $merged = mergeWordWithPattern($word, $found, $pattern);
+    }
+
     $hyphenated = hyphenateFromMerged($merged);
 
     echo $hyphenated."<br>";
