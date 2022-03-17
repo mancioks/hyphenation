@@ -5,8 +5,6 @@ services:
       context: .
       dockerfile: Dockerfile
     container_name: php81-h
-    depends_on:
-      - db
     volumes:
       #- ./naujas:/var/www/html/
       - ./hyphenation:/var/www/

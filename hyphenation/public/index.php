@@ -1,7 +1,7 @@
 <?php
 
 $start_time = microtime(true);
-$word = "mistranslate";
+
 $maxLen = 0;
 $minLen = 500;
 
@@ -34,15 +34,15 @@ function splitWord($word, $maxLen, $minLen)
         for ($y = $minLen; $y <= $len; $y++) {
             $part = substr($word, $x, $y);
 
-//            if ($x == 0) {
-//                $parts["starts_with"][] = ["start_index" => $x, "part" => $part];
-//            }
-//            if ($len == $y && $x >= $endStart) {
-//                $parts["ends_with"][] = ["start_index" => $x, "part" => $part];
-//            }
-//            $parts["everywhere"][] = ["start_index" => $x, "part" => $part];
-
             if ($x == 0) {
+                $parts["starts_with"][] = ["start_index" => $x, "part" => $part];
+            }
+            if ($len == $y && $x >= $endStart) {
+                $parts["ends_with"][] = ["start_index" => $x, "part" => $part];
+            }
+            $parts["everywhere"][] = ["start_index" => $x, "part" => $part];
+
+            /*if ($x == 0) {
                 $parts["starts_with"][] = ["start_index" => $x, "part" => $part];
                 //zodzio pradzios negalima manau det prie tikrinimu su everywhere (is patterno)
             } elseif ($len == $y && $x >= $endStart) {
@@ -50,7 +50,7 @@ function splitWord($word, $maxLen, $minLen)
                 $parts["everywhere"][] = ["start_index" => $x, "part" => $part];
             } else {
                 $parts["everywhere"][] = ["start_index" => $x, "part" => $part];
-            }
+            }*/
         }
     }
 
@@ -124,6 +124,7 @@ function mergeWordWithPattern($word, $foundPattern)
         }
     }
 
+    //return implode("", $word);
     return str_replace("0", "", implode("", $word));
 }
 
@@ -149,16 +150,27 @@ foreach ($patterns as $line) {
 
 function hyphenateFromMerged($merged)
 {
-    return str_replace([1,3,5,7,9], "-", str_replace([2,4,6,8], "", $merged));
+    //return $merged;
+    return trim(str_replace([1,3,5,7,9], "-", str_replace([2,4,6,8], "", $merged)), "-");
 }
 
-$parts = splitWord($word,$maxLen, $minLen);
-$found = findPartsInPattern($parts, $pattern);
-$merged = mergeWordWithPattern($word, $found);
-$hyphenated = hyphenateFromMerged($merged);
+$words = new SplFileObject('words.txt');
+$words->setFlags(
+    SplFileObject::SKIP_EMPTY |
+    SplFileObject::DROP_NEW_LINE
+);
 
-echo $hyphenated;
+foreach ($words as $word) {
+    $parts = splitWord($word,$maxLen, $minLen);
+    $found = findPartsInPattern($parts, $pattern);
+    $merged = mergeWordWithPattern($word, $found);
+    $hyphenated = hyphenateFromMerged($merged);
+
+    echo $hyphenated."<br>";
+}
+
+
 
 $end_time = microtime(true);
 $execution_time = ($end_time - $start_time);
-//echo "\nExecution time of script = ".$execution_time." sec<br>\n";
+echo "\n<br>Execution time of script = ".$execution_time." sec<br>\n";
