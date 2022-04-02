@@ -6,7 +6,7 @@ require PROJECT_ROOT_DIR.'/vendor/autoload.php';
 
 $start_time = microtime(true);
 
-echo "<pre>";
+//echo "<pre>";
 
 new \Hyphenator\Hyphenate();
 

@@ -128,32 +128,4 @@ class Pattern
     {
         return preg_replace('/[^a-z]+/', '', $pattern);
     }
-
-    public function getMinLen(): int
-    {
-        $minLen = 500;
-
-        $fileContents = FileHelper::getContents($this->file);
-
-        foreach ($fileContents as $element) {
-            $text = Pattern::toText($element);
-            if(strlen($text) < $minLen) $minLen = strlen($text);
-        }
-
-        return $minLen;
-    }
-
-    public function getMaxLen(): int
-    {
-        $maxLen = 0;
-
-        $fileContents = FileHelper::getContents($this->file);
-
-        foreach ($fileContents as $element) {
-            $text = Pattern::toText($element);
-            if(strlen($text) > $maxLen) $maxLen = strlen($text);
-        }
-
-        return $maxLen;
-    }
 }

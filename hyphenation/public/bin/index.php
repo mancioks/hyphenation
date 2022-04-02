@@ -1,6 +1,6 @@
 <?php
 
-const DEBUG = true;
+const DEBUG = false;
 
 $fileName = 'words.txt';
 if(DEBUG) {

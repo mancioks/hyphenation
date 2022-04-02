@@ -4,6 +4,8 @@ namespace Hyphenator;
 
 use Data\Pattern;
 use Data\Word;
+use Helper\DBHelper;
+use Helper\StringHelper;
 
 class Hyphenate
 {
@@ -15,11 +17,11 @@ class Hyphenate
 
         $wordsObject = new Word();
         $wordsObject->setFile(PROJECT_ROOT_DIR."/var/words.txt");
-        $wordsObject->setPartMaxLen($patternObject->getMaxLen());
-        $wordsObject->setPartMinLen($patternObject->getMinLen());
         $words = $wordsObject->getAllWords();
 
-        var_dump($this->hyphenate($words, $pattern));
+        $this->hyphenate($words, $pattern);
+
+        //var_dump($this->hyphenate($words, $pattern));
     }
 
     private function mergeWordWithPattern($wordObject, $foundPattern)
@@ -66,7 +68,7 @@ class Hyphenate
             if(!is_numeric(end($newPattern))) {
                 $newPattern[] = 0;
             }
-
+            //echo implode("", $newPattern)." ".$startsFrom."<br>";
             $tempCount = 0;
             for($x = $startsFrom; $x < $startsFrom + count($newPattern); $x+=2) {
                 if($newPattern[$tempCount] > $word[$x]) {
@@ -76,21 +78,27 @@ class Hyphenate
             }
         }
 
+        //echo implode("", $word)."<br>";
         return str_replace("0", "", implode("", $word));
     }
 
     private function hyphenate($words, $pattern)
     {
         /**
-         * @var \Data\Word $word
+         * @var Word $word
          */
         $hyphenated = [];
         foreach ($words as $word) {
-            $found = $this->findPartsInPattern($word->getParts(), $pattern);
-            $merged = $this->mergeWordWithPattern($word, $found);
-            $hyphenated[] = $this->hyphenateFromMerged($merged);
-        }
+            $found = $this->findPatternsInWord($word->getWord(), $pattern);
 
+
+            $merged = $this->mergeWordWithPattern($word, $found);
+            //echo $merged."<br>";
+            $hyphenatedText = $this->hyphenateFromMerged($merged);
+            $hyphenated[] = $hyphenatedText;
+
+            echo $hyphenatedText."<br>";
+        }
         return $hyphenated;
     }
 
@@ -99,28 +107,36 @@ class Hyphenate
         return trim(str_replace([1,3,5,7,9], "-", str_replace([2,4,6,8], "", $merged)), "-");
     }
 
-    private function findPartsInPattern($splitParts, $patternObject)
+    private function findPatternsInWord($word, $patterns)
     {
         $found = [];
+        $wordLen = strlen($word);
 
         /**
-         * @var \Data\Part $part
+         * @var \Data\Pattern $pattern
          */
-        foreach ($splitParts as $part) {
-
-            /**
-             * @var \Data\Pattern $pattern
-             */
-            foreach ($patternObject as $pattern) {
-                if($part->getPart() == $pattern->getPlainPattern() && $part->getType() == $pattern->getType()) {
-                    $foundPattern = $pattern;
-                    $foundPattern->setStartIndex($part->getStartIndex());
-
+        foreach ($patterns as $pattern) {
+            if($pattern->getType() == Pattern::STARTS_WITH && str_starts_with($word, $pattern->getPlainPattern())) {
+                $foundPattern = $pattern;
+                $foundPattern->setStartIndex(0);
+                $found[] = $foundPattern;
+            } elseif ($pattern->getType() == Pattern::ENDS_WITH && str_ends_with($word, $pattern->getPlainPattern())) {
+                $foundPattern = $pattern;
+                $foundPattern->setStartIndex($wordLen - strlen($pattern->getPlainPattern()));
+                $found[] = $foundPattern;
+            } elseif ($pattern->getType() == Pattern::EVERYWHERE && str_contains($word, $pattern->getPlainPattern())) {
+                $foundPositions = StringHelper::strposAll($word, $pattern->getPlainPattern());
+                foreach ($foundPositions as $foundPosition) {
+                    $foundPattern = clone $pattern;
+                    $foundPattern->setStartIndex($foundPosition);
                     $found[] = $foundPattern;
+                    //cia yra klaida, kad deda rastus patternus bet visu objektu start index pakeicia o ne vieno
+                    //echo $foundPattern->getPattern()." - ".$foundPosition." ";
                 }
             }
         }
-
+        //echo '<pre>';
+        //var_dump($found);
         return $found;
     }
 }

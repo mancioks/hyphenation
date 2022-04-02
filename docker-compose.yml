@@ -10,3 +10,13 @@ services:
       - ./hyphenation:/var/www/
     ports:
       - 8000:80
+  db_hyphenation:
+    container_name: mysql8-h
+    image: mysql:8.0
+    command: --default-authentication-plugin=mysql_native_password
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: hyphenation
+    ports:
+      - 6033:3306
