@@ -2,15 +2,18 @@
 
 namespace Hyphenator;
 
+use Core\BaseController;
 use Data\Pattern;
 use Data\Word;
 use Helper\DBHelper;
 use Helper\StringHelper;
 
-class Hyphenate
+class Hyphenate extends BaseController
 {
     public function __construct()
     {
+        parent::__construct();
+
         $patternObject = new Pattern();
         $patternObject->setFile(PROJECT_ROOT_DIR."/var/pattern.txt");
         $pattern = $patternObject->getAllPatterns();
@@ -131,6 +134,7 @@ class Hyphenate
                     $foundPattern->setStartIndex($foundPosition);
                     $found[] = $foundPattern;
                     //cia yra klaida, kad deda rastus patternus bet visu objektu start index pakeicia o ne vieno
+                    //issisprende beda su clone, kopijuoja objekta ir nebera rysio su senu tada
                     //echo $foundPattern->getPattern()." - ".$foundPosition." ";
                 }
             }

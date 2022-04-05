@@ -1,20 +1,10 @@
 {
     "name": "mantas/hyphenation",
-    "description": "hyphenation",
     "type": "project",
-    "license": "MIT",
     "autoload": {
-        "psr-4": {
-            "": "app/code"
-        }
+        "psr-4": { "": "app/" }
     },
-    "authors": [
-        {
-            "name": "mancioks",
-            "email": "mantas.kryzevicius@gmail.com"
-        }
-    ],
     "require": {
-      "ext-pdo": "*"
+        "psr/log": "^3.0"
     }
 }

@@ -4,6 +4,7 @@ ini_set('max_execution_time', '3000');
 set_time_limit(3000);
 
 define('PROJECT_ROOT_DIR', __DIR__);
+define('APP_ROOT_DIR', PROJECT_ROOT_DIR.'/app/');
 
 define('SERVERNAME', 'db_hyphenation');
 define('DB_NAME', 'hyphenation');
