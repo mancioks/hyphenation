@@ -10,6 +10,7 @@ define('SERVERNAME', 'db_hyphenation');
 define('DB_NAME', 'hyphenation');
 define('DB_USER', 'root');
 define('DB_PASS', 'root');
+define('SERVER_PORT', 3306);
 
 define('SERVERNAME_CLI', "localhost");
 define('SERVERPORT_CLI', '6033');
