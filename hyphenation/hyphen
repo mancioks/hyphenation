@@ -5,8 +5,6 @@ require PROJECT_ROOT_DIR.'/vendor/autoload.php';
 
 define('CLI', true);
 
-use Helper\DBHelper;
-
 if($argc > 0) {
     if($argc == 1) {
         echo "for help, type:\nphp hyphen -h";
@@ -23,13 +21,22 @@ if($argc > 0) {
                 if($argv[2] == "-w") $table = "words";
                 if($argv[2] == "-p") $table = "patterns";
 
-                //echo "migrate ".$file." to ".$table;
-                $db = new DBHelper();
-                $db->truncate($table)->exec();
+                $db = new \Helper\Database();
+
+                $db->query('truncate table '.$table)->exec();
+
                 $fileContents = \Helper\FileHelper::getContents($file);
+
+                $db->begin();
+
+                $db->query('INSERT INTO '.$table.' (value) VALUES (?)');
+
                 foreach ($fileContents as $line) {
-                    $db->insert($table, ['name' => $line])->exec();
+                    $db->exec([$line]);
                 }
+
+                $db->commit();
+
                 echo "migration success";
             }
         }

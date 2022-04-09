@@ -5,7 +5,7 @@
         'type' => 'project',
         'install_path' => __DIR__ . '/../../',
         'aliases' => array(),
-        'reference' => '2e1c7adb0ae947acdc3a13ed0c304d8f5eaeaeff',
+        'reference' => '86f3d3946ecc7050d10c4baacabd43d998d63399',
         'name' => 'mantas/hyphenation',
         'dev' => true,
     ),
@@ -16,7 +16,7 @@
             'type' => 'project',
             'install_path' => __DIR__ . '/../../',
             'aliases' => array(),
-            'reference' => '2e1c7adb0ae947acdc3a13ed0c304d8f5eaeaeff',
+            'reference' => '86f3d3946ecc7050d10c4baacabd43d998d63399',
             'dev_requirement' => false,
         ),
         'psr/log' => array(

@@ -62,8 +62,14 @@ class Database
     public function begin()
     {
         $this->conn->beginTransaction();
+
+        return $this;
+    }
+
+    public function exec($params = null)
+    {
         $sth = $this->conn->prepare($this->sql);
-        $sth->execute();
+        $sth->execute($params);
 
         return $this;
     }

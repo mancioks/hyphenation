@@ -1,22 +1,23 @@
 version: '3.8'
 services:
-  web_hyphenation:
+  http:
     build:
       context: .
-      dockerfile: Dockerfile
-    container_name: php81-h
+      dockerfile: docker/http/Dockerfile
+    container_name: web-hyphenation
     volumes:
       #- ./naujas:/var/www/html/
       - ./hyphenation:/var/www/
     ports:
-      - 8000:80
-  db_hyphenation:
-    container_name: mysql8-h
-    image: mysql:8.0
-    command: --default-authentication-plugin=mysql_native_password
+      - 80:80
+  mariadb:
+    container_name: mariadb-hyphenation
+    image: mariadb:latest
     restart: always
     environment:
-      MYSQL_ROOT_PASSWORD: root
-      MYSQL_DATABASE: hyphenation
+      MARIADB_ROOT_PASSWORD: root
+      MARIADB_DATABASE: hyphenation
     ports:
-      - 6033:3306
+      - 3306:3306
+    volumes:
+      - ./docker/mariadb:/docker-entrypoint-initdb.d

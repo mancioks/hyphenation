@@ -4,11 +4,13 @@
 require '../config.php';
 require PROJECT_ROOT_DIR.'/vendor/autoload.php';
 
+use \Helper\Database;
+
 $start_time = microtime(true);
 
 //echo "<pre>";
 
-//new \Helper\Database();
+new \Helper\Database();
 new \Hyphenator\Hyphenate();
 
 $end_time = microtime(true);
