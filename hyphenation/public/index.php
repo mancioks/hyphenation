@@ -11,7 +11,7 @@ $start_time = microtime(true);
 //echo "<pre>";
 
 new \Helper\Database();
-new \Hyphenator\Hyphenate();
+new \Hyphenator\Hyphenate(false, 'db');
 
 $end_time = microtime(true);
 

@@ -11,7 +11,8 @@ if($argc > 0) {
     }
     if(isset($argv[1]) && $argv[1] == "-h") {
         echo "php hyphen migrate -w [filename] - migrate words to database\n";
-        echo "php hyphen migrate -p [filename] - migrate patterns to database";
+        echo "php hyphen migrate -p [filename] - migrate patterns to database\n";
+        echo "php hyphen -w [word] - hyphenate word\n";
     }
     if(isset($argv[1]) && $argv[1] == "migrate") {
         if(isset($argv[2]) && $argv[2] == "-w" || isset($argv[2]) && $argv[2] == "-p") {
@@ -33,6 +34,7 @@ if($argc > 0) {
 
                 foreach ($fileContents as $line) {
                     $db->exec([$line]);
+                    //echo $db->lastId();
                 }
 
                 $db->commit();
@@ -40,5 +42,9 @@ if($argc > 0) {
                 echo "migration success";
             }
         }
+    }
+    if(isset($argv[1]) && $argv[1] == "-w") {
+        $word = $argv[2];
+        new \Hyphenator\Hyphenate($word, 'db');
     }
 }

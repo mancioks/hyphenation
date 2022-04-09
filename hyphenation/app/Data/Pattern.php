@@ -2,10 +2,12 @@
 
 namespace Data;
 
+use Helper\Database;
 use Helper\FileHelper;
 
 class Pattern
 {
+    private int $id;
     private string $pattern;
     private string $plainPattern;
     private string $type;
@@ -15,6 +17,22 @@ class Pattern
     public const STARTS_WITH = 0;
     public const ENDS_WITH = 1;
     public const EVERYWHERE = 2;
+
+    /**
+     * @return int
+     */
+    public function getId(): int
+    {
+        return $this->id;
+    }
+
+    /**
+     * @param int $id
+     */
+    public function setId(int $id): void
+    {
+        $this->id = $id;
+    }
 
     /**
      * @return string
@@ -107,6 +125,39 @@ class Pattern
 
             $pattern = new Pattern();
 
+            $pattern->setPattern($element);
+            $pattern->setPlainPattern($plainText);
+
+            if(str_starts_with($element, ".")) {
+                $pattern->setType(Pattern::STARTS_WITH);
+            } elseif (str_ends_with($element, ".")) {
+                $pattern->setType(Pattern::ENDS_WITH);
+            } else {
+                $pattern->setType(Pattern::EVERYWHERE);
+            }
+
+            $patterns[] = $pattern;
+        }
+
+        return $patterns;
+    }
+
+    public function getAllPatternsFromDb()
+    {
+        $patterns = [];
+
+        $db = new Database();
+        $db->query('SELECT * FROM patterns');
+
+        $patternsFromDb = $db->getAll();
+
+        foreach ($patternsFromDb as $elementDb) {
+            $element = $elementDb['value'];
+            $plainText = Pattern::toText($element);
+
+            $pattern = new Pattern();
+
+            $pattern->setId($elementDb['id']);
             $pattern->setPattern($element);
             $pattern->setPlainPattern($plainText);
 

@@ -10,17 +10,39 @@ use Helper\StringHelper;
 
 class Hyphenate extends BaseController
 {
-    public function __construct()
+    private $source;
+    private $mode;
+
+    public function __construct($word = false, $source = 'file')
     {
         parent::__construct();
+        $this->source = $source;
 
         $patternObject = new Pattern();
-        $patternObject->setFile(PROJECT_ROOT_DIR."/var/pattern.txt");
-        $pattern = $patternObject->getAllPatterns();
+
+        if($source == 'file') {
+            $patternObject->setFile(PROJECT_ROOT_DIR."/var/pattern.txt");
+            $pattern = $patternObject->getAllPatterns();
+        }
+        if($source == 'db') {
+            $pattern = $patternObject->getAllPatternsFromDb();
+        }
 
         $wordsObject = new Word();
-        $wordsObject->setFile(PROJECT_ROOT_DIR."/var/words.txt");
-        $words = $wordsObject->getAllWords();
+        if($word) {
+            $this->mode = 'cli';
+            $wordsObject->setWord($word);
+            $words = [$wordsObject];
+        } else {
+            $this->mode = 'web';
+            if($source == 'file') {
+                $wordsObject->setFile(PROJECT_ROOT_DIR."/var/words.txt");
+                $words = $wordsObject->getAllWords();
+            }
+            if($source == 'db') {
+                $words = $wordsObject->getAllWordsFromDb();
+            }
+        }
 
         $this->hyphenate($words, $pattern);
 
@@ -100,7 +122,14 @@ class Hyphenate extends BaseController
             $hyphenatedText = $this->hyphenateFromMerged($merged);
             $hyphenated[] = $hyphenatedText;
 
-            echo $hyphenatedText."<br>";
+            echo $hyphenatedText."\n";
+
+            if($this->mode == 'cli' && $this->source == 'db') {
+                echo "patterns found:\n";
+                foreach ($found as $element) {
+                    echo $element->getPattern()."\n";
+                }
+            }
         }
         return $hyphenated;
     }
