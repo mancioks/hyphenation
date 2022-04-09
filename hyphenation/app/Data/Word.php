@@ -2,9 +2,10 @@
 
 namespace Data;
 
+use Core\BaseController;
 use Helper\FileHelper;
 
-class Word
+class Word extends BaseController
 {
     private string $word;
     private string $file;
@@ -44,6 +45,8 @@ class Word
             $word->setWord($element);
 
             $words[] = $word;
+
+            $this->logger->info("Word found: ".$element);
         }
 
         return $words;
