@@ -58,7 +58,7 @@ if($argc > 0) {
             $pattern = \Data\Pattern::getAllPatterns(PROJECT_ROOT_DIR.'/var/pattern.txt');
         }
 
-        $hyphenator = new \Hyphenator\HyphenateTest();
+        $hyphenator = new \Hyphenator\Hyphenate();
 
         if($source == 'db') {
             if(!$hyphenator->loadFromDb($word)) {

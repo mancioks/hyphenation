@@ -4,7 +4,7 @@ namespace Controller;
 
 use Core\BaseController;
 use Data\Pattern;
-use Hyphenator\HyphenateTest;
+use Hyphenator\Hyphenate;
 
 class Main extends BaseController
 {
@@ -24,7 +24,7 @@ class Main extends BaseController
             $pattern = Pattern::getAllPatterns('../var/pattern.txt');
         }
 
-        $hyphenate = new HyphenateTest();
+        $hyphenate = new Hyphenate();
 
         if($source == 'db') {
             if(!$hyphenate->loadFromDb($word)) {

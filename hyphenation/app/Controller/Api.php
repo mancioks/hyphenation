@@ -6,7 +6,6 @@ use Core\BaseController;
 use Data\Pattern;
 use Helper\Database;
 use Hyphenator\Hyphenate;
-use Hyphenator\HyphenateTest;
 
 class Api extends BaseController
 {
@@ -35,7 +34,7 @@ class Api extends BaseController
     private function get()
     {
         if($this->word) {
-            $hyphenated = new HyphenateTest();
+            $hyphenated = new Hyphenate();
             if($hyphenated->loadFromDb($this->word)) {
                 $patterns = [];
                 foreach ($hyphenated->getFoundPatterns() as $pattern) {
@@ -55,7 +54,7 @@ class Api extends BaseController
             $words = [];
 
             foreach ($data as $hyphenatedDb) {
-                $hyphenated = new HyphenateTest();
+                $hyphenated = new Hyphenate();
                 $hyphenated->loadFromDb($hyphenatedDb["word"]);
 
                 $word = [];
@@ -80,8 +79,8 @@ class Api extends BaseController
     private function post()
     {
         if($this->word) {
-            if(!HyphenateTest::existsInDb($this->word)) {
-                $hyphenate = new HyphenateTest();
+            if(!Hyphenate::existsInDb($this->word)) {
+                $hyphenate = new Hyphenate();
                 $hyphenate->hyphenate($this->word, Pattern::getAllPatternsFromDb());
                 $hyphenate->insertIntoDb();
 
@@ -103,10 +102,10 @@ class Api extends BaseController
     private function put()
     {
         if($this->word) {
-            if(HyphenateTest::existsInDb($this->word)) {
-                HyphenateTest::deleteFromDb($this->word);
+            if(Hyphenate::existsInDb($this->word)) {
+                Hyphenate::deleteFromDb($this->word);
 
-                $hyphenate = new HyphenateTest();
+                $hyphenate = new Hyphenate();
                 $hyphenate->hyphenate($this->word, Pattern::getAllPatternsFromDb());
                 $hyphenate->insertIntoDb();
 
@@ -129,8 +128,8 @@ class Api extends BaseController
     private function delete()
     {
         if($this->word) {
-            if(HyphenateTest::existsInDb($this->word)) {
-                HyphenateTest::deleteFromDb($this->word);
+            if(Hyphenate::existsInDb($this->word)) {
+                Hyphenate::deleteFromDb($this->word);
                 $this->header = "200 OK";
                 $this->data[] = ["status" => "ok"];
             } else {

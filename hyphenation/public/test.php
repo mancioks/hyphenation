@@ -3,5 +3,5 @@
 require '../config.php';
 require '../vendor/autoload.php';
 
-$hyp = new \Hyphenator\HyphenateTest();
+$hyp = new \Hyphenator\Hyphenate();
 $hyp->loadFromDb("mistranslate");
