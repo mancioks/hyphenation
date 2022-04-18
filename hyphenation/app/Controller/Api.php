@@ -70,7 +70,7 @@ class Api extends BaseController
                 $words[] = $word;
             }
 
-            $this->data[] = $words;
+            $this->data["words"] = $words;
 
             $this->header = "200 OK";
         }
