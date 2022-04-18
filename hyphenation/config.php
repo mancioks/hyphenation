@@ -5,6 +5,7 @@ set_time_limit(3000);
 
 define('PROJECT_ROOT_DIR', __DIR__);
 define('APP_ROOT_DIR', PROJECT_ROOT_DIR.'/app/');
+define('BASE_URL', 'http://localhost:8000/index.php');
 
 define('SERVERNAME', 'mariadb');
 define('DB_NAME', 'hyphenation');

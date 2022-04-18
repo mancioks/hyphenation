@@ -11,7 +11,6 @@ class Pattern
     private string $pattern;
     private string $plainPattern;
     private string $type;
-    private string $file;
     private int $startIndex;
 
     public const STARTS_WITH = 0;
@@ -75,30 +74,6 @@ class Pattern
     }
 
     /**
-     * @param string $pattern
-     */
-    public function setPattern(string $pattern): void
-    {
-        $this->pattern = $pattern;
-    }
-
-    /**
-     * @return string
-     */
-    public function getFile(): string
-    {
-        return $this->file;
-    }
-
-    /**
-     * @param string $file
-     */
-    public function setFile(string $file): void
-    {
-        $this->file = $file;
-    }
-
-    /**
      * @return int
      */
     public function getStartIndex(): int
@@ -114,27 +89,15 @@ class Pattern
         $this->startIndex = $startIndex;
     }
 
-    public function getAllPatterns()
+    public static function getAllPatterns($file)
     {
         $patterns = [];
 
-        $fileContents = FileHelper::getContents($this->file);
+        $fileContents = FileHelper::getContents($file);
 
         foreach ($fileContents as $element) {
-            $plainText = Pattern::toText($element);
-
             $pattern = new Pattern();
-
             $pattern->setPattern($element);
-            $pattern->setPlainPattern($plainText);
-
-            if(str_starts_with($element, ".")) {
-                $pattern->setType(Pattern::STARTS_WITH);
-            } elseif (str_ends_with($element, ".")) {
-                $pattern->setType(Pattern::ENDS_WITH);
-            } else {
-                $pattern->setType(Pattern::EVERYWHERE);
-            }
 
             $patterns[] = $pattern;
         }
@@ -142,7 +105,25 @@ class Pattern
         return $patterns;
     }
 
-    public function getAllPatternsFromDb()
+    public function setPattern($element, $id = null)
+    {
+        $this->pattern = $element;
+        $this->plainPattern = Pattern::toText($element);
+
+        if($id) {
+            $this->id = $id;
+        }
+
+        if(str_starts_with($element, ".")) {
+            $this->setType(Pattern::STARTS_WITH);
+        } elseif (str_ends_with($element, ".")) {
+            $this->setType(Pattern::ENDS_WITH);
+        } else {
+            $this->setType(Pattern::EVERYWHERE);
+        }
+    }
+
+    public static function getAllPatternsFromDb()
     {
         $patterns = [];
 
@@ -153,26 +134,27 @@ class Pattern
 
         foreach ($patternsFromDb as $elementDb) {
             $element = $elementDb['value'];
-            $plainText = Pattern::toText($element);
 
             $pattern = new Pattern();
-
-            $pattern->setId($elementDb['id']);
-            $pattern->setPattern($element);
-            $pattern->setPlainPattern($plainText);
-
-            if(str_starts_with($element, ".")) {
-                $pattern->setType(Pattern::STARTS_WITH);
-            } elseif (str_ends_with($element, ".")) {
-                $pattern->setType(Pattern::ENDS_WITH);
-            } else {
-                $pattern->setType(Pattern::EVERYWHERE);
-            }
+            $pattern->setPattern($element, $elementDb["id"]);
 
             $patterns[] = $pattern;
         }
 
         return $patterns;
+    }
+
+    public function loadById($id)
+    {
+        $db = new Database();
+        $db->query("SELECT * FROM patterns WHERE id = ".$id);
+        $data = $db->get();
+
+        if($data) {
+            $this->setPattern($data["value"], $id);
+        }
+
+        return $this;
     }
 
     private static function toText($pattern)

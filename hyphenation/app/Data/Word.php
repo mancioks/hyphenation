@@ -10,7 +10,6 @@ class Word extends BaseController
 {
     private int $id;
     private string $word;
-    private string $file;
 
     /**
      * @return int
@@ -42,14 +41,6 @@ class Word extends BaseController
     public function setWord(string $word): void
     {
         $this->word = $word;
-    }
-
-    /**
-     * @param string $file
-     */
-    public function setFile(string $file): void
-    {
-        $this->file = $file;
     }
 
     public function getAllWords()

@@ -1,19 +1,43 @@
 <?php
 
-
 require '../config.php';
-require PROJECT_ROOT_DIR.'/vendor/autoload.php';
+require PROJECT_ROOT_DIR . '/vendor/autoload.php';
 
-use \Helper\Database;
+$request = $_SERVER["PATH_INFO"] ?? "/";
+$request = trim($request, "/");
 
-$start_time = microtime(true);
+$request = explode("/", $request);
 
-//echo "<pre>";
+if (!empty($request[0])) {
+    if(class_exists("\Controller\\" . $request[0])) {
+        $class = ucfirst($request[0]);
+        if(isset($request[1])) {
+            if(method_exists("\Controller\\" . $class, $request[1])) {
+                $method = $request[1];
+                if(isset($request[2])) {
+                    $param = $request[2];
+                }
+            } else {
+                $class = "Error";
+                $method = "Index";
+            }
+        } else {
+            $method = "Index";
+        }
+    } else {
+        $class = "Error";
+        $method = "Index";
+    }
+} else {
+    $class = "Main";
+    $method = "Index";
+}
 
-new \Helper\Database();
-new \Hyphenator\Hyphenate(false, 'db');
+$class = "\Controller\\" . $class;
+$classObj = new $class;
 
-$end_time = microtime(true);
-
-$execution_time = ($end_time - $start_time);
-echo "<br><br>Execution time of script = ".$execution_time." sec<br>\n";
+if(isset($param)) {
+    $classObj->$method($param);
+} else {
+    $classObj->$method();
+}

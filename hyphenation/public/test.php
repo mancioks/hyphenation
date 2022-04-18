@@ -1,14 +1,7 @@
 <?php
 
 require '../config.php';
-require '../app/code/Helper/DBHelper.php';
+require '../vendor/autoload.php';
 
-use Helper\DBHelper;
-
-//var_dump($argv);
-
-//echo SERVERNAME;
-
-$db = new DBHelper();
-$data = $db->select()->from("words")->get();
-var_dump($data);
+$hyp = new \Hyphenator\HyphenateTest();
+$hyp->loadFromDb("mistranslate");

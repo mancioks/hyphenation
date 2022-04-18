@@ -3,8 +3,11 @@
 namespace Hyphenator;
 
 use Core\BaseController;
+use Data\Database\Hyphenated;
+use Data\Database\HyphenatedPatterns;
 use Data\Pattern;
 use Data\Word;
+use Helper\Database;
 use Helper\DBHelper;
 use Helper\StringHelper;
 
@@ -12,41 +15,151 @@ class Hyphenate extends BaseController
 {
     private $source;
     private $mode;
+    private $type;
+    private $hyphenatedWords;
+    private $foundPatterns;
 
-    public function __construct($word = false, $source = 'file')
+    private $wordsFile;
+    private $patternFile;
+
+    /**
+     * @param string $source
+     */
+    public function setSource(string $source): void
+    {
+        $this->source = $source;
+    }
+
+    /**
+     * @param mixed $wordsFile
+     */
+    public function setWordsFile($wordsFile): void
+    {
+        $this->wordsFile = $wordsFile;
+    }
+
+    /**
+     * @param mixed $patternFile
+     */
+    public function setPatternFile($patternFile): void
+    {
+        $this->patternFile = $patternFile;
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getFoundPatterns()
+    {
+        return $this->foundPatterns;
+    }
+
+    /**
+     * @param string $mode
+     */
+    public function setMode(string $mode): void
+    {
+        $this->mode = $mode;
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getHyphenatedWords()
+    {
+        return $this->hyphenatedWords;
+    }
+
+
+    public function __construct()
     {
         parent::__construct();
-        $this->source = $source;
+        $this->source = 'file';
+        $this->mode = 'web';
+        $this->type = 'all';
+    }
 
+    public function hyphenate($word = false)
+    {
         $patternObject = new Pattern();
 
-        if($source == 'file') {
-            $patternObject->setFile(PROJECT_ROOT_DIR."/var/pattern.txt");
+        if($this->source == 'file') {
+            $patternObject->setFile($this->patternFile);
             $pattern = $patternObject->getAllPatterns();
         }
-        if($source == 'db') {
+        if($this->source == 'db') {
             $pattern = $patternObject->getAllPatternsFromDb();
         }
 
         $wordsObject = new Word();
+
         if($word) {
-            $this->mode = 'cli';
+            $this->foundPatterns = [];
+            $this->type = 'single';
             $wordsObject->setWord($word);
             $words = [$wordsObject];
         } else {
-            $this->mode = 'web';
-            if($source == 'file') {
-                $wordsObject->setFile(PROJECT_ROOT_DIR."/var/words.txt");
+            $this->type = 'all';
+            if($this->source == 'file') {
+                $wordsObject->setFile($this->wordsFile);
                 $words = $wordsObject->getAllWords();
             }
-            if($source == 'db') {
+            if($this->source == 'db') {
                 $words = $wordsObject->getAllWordsFromDb();
             }
         }
 
-        $this->hyphenate($words, $pattern);
+        $hyphenated = [];
 
-        //var_dump($this->hyphenate($words, $pattern));
+        foreach ($words as $word) {
+            if($this->source == "db" && Hyphenated::exists($word->getWord())) {
+                $hyphenatedObj = new Hyphenated();
+                $hyphenatedObj->loadByWord($word->getWord());
+                $hyphenated[] = $hyphenatedObj->getHyphenated();
+
+                $found = [];
+
+                if($this->type == 'single') {
+                    foreach (HyphenatedPatterns::getPatternsByWordId($hyphenatedObj->getId()) as $element) {
+                        $patternObj = new Pattern();
+                        $patternObj->setPattern($element->getValue());
+
+                        $found[] = $patternObj;
+                    }
+                }
+            } else {
+                $found = $this->findPatternsInWord($word->getWord(), $pattern);
+
+                $merged = $this->mergeWordWithPattern($word, $found);
+                //echo $merged."<br>";
+                $hyphenatedText = $this->hyphenateFromMerged($merged);
+                $hyphenated[] = $hyphenatedText;
+
+                if($this->source == 'db') {
+                    $db = new Database();
+                    $db->begin();
+                    $db->query('INSERT INTO hyphenated (word, hyphenated) VALUES (?,?)');
+                    $db->exec([$word->getWord(), $hyphenatedText]);
+                    $wordId = $db->lastId();
+
+                    $db->query('INSERT INTO hyphenated_patterns (hyphenated_id, pattern_id) VALUES (?,?)');
+
+                    foreach ($found as $element) {
+                        $db->exec([$wordId, $element->getId()]);
+                    }
+
+                    $db->commit();
+                }
+            }
+            if($this->mode == 'cli' && $this->source == 'db' && $this->type == 'single') {
+                foreach ($found as $element) {
+                    $this->foundPatterns[] = $element;
+                }
+            }
+        }
+        $this->hyphenatedWords = $hyphenated;
+
+        return $this;
     }
 
     private function mergeWordWithPattern($wordObject, $foundPattern)
@@ -105,33 +218,6 @@ class Hyphenate extends BaseController
 
         //echo implode("", $word)."<br>";
         return str_replace("0", "", implode("", $word));
-    }
-
-    private function hyphenate($words, $pattern)
-    {
-        /**
-         * @var Word $word
-         */
-        $hyphenated = [];
-        foreach ($words as $word) {
-            $found = $this->findPatternsInWord($word->getWord(), $pattern);
-
-
-            $merged = $this->mergeWordWithPattern($word, $found);
-            //echo $merged."<br>";
-            $hyphenatedText = $this->hyphenateFromMerged($merged);
-            $hyphenated[] = $hyphenatedText;
-
-            echo $hyphenatedText."\n";
-
-            if($this->mode == 'cli' && $this->source == 'db') {
-                echo "patterns found:\n";
-                foreach ($found as $element) {
-                    echo $element->getPattern()."\n";
-                }
-            }
-        }
-        return $hyphenated;
     }
 
     private function hyphenateFromMerged($merged)

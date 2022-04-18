@@ -13,4 +13,9 @@ class BaseController
     {
         $this->logger = $logger;
     }
+
+    protected function render($template, $data = []){
+        extract($data);
+        include PROJECT_ROOT_DIR.'/templates/'.$template.".php";
+    }
 }
